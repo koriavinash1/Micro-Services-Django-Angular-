@@ -1,0 +1,41 @@
+{% load static from staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link href="{% static "base/lib/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet">
+<script src="{% static "base/lib/jquery/jquery.min.js" %} "></script>
+<script type="text/javascript" src="{% static "base/lib/angular.min.js" %}"></script>
+<script src="{% static "base/lib/bootstrap/js/bootstrap.min.js" %} "></script>
+</head>
+<body ng-app="loginservice" ng-controller="login">
+
+		<div class="container-fluid" style="width: 350px; height: 300px;margin-top: 250px;" ng-show="loginview">
+			<label>Username: </label>
+			<input class="form-control" type="text" name="username" ng-model = "username"/>
+			<label>Password: </label>
+			<input class="form-control" type="password" name="password" ng-model = "password">
+			<br>
+			<button type="button" class="btn btn-default" ng-click="login()">Login</button><br>
+			<p>No account?  <button class="btn btn-default" ng-click="signupviewfunc()">Signup</button></p>
+		</div>
+		<div class="container-fluid" style="width: 400px; margin-top: 150px;" ng-show="signupview">
+			<label>First Name: </label>
+			<input class="form-control" type="text" name="firstname" ng-model = "firstname"/>
+			<label>Last Name: </label>
+			<input class="form-control" type="text" name="lastname" ng-model = "lastname"/>
+			<label>Username: </label>
+			<input class="form-control" type="text" name="username" ng-model = "username"/>
+			<label>Email: </label>
+			<input class="form-control" type="text" name="email" ng-model = "email"/>
+			<label>Contact No: </label>
+			<input class="form-control" type="text" name="contactno" ng-model = "contactno"/>
+			<label>Password: </label>
+			<input class="form-control" type="password" name="password" ng-model = "password">
+			<label>Confirm Password: </label>
+			<input class="form-control" type="password" name="cpassword" ng-model = "cpassword"/>
+			<br>
+			<button type="button" class="btn btn-default" ng-click="signup()">Signup</button><br>
+		</div>
+	</body>
+<script src="{% static "base/js/custom.js" %} "></script>
+</html>
