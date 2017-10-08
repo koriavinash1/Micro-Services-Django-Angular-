@@ -51,14 +51,18 @@ def split_stories(lines):
 			story.append(sent)
 	return data
 
-def get_stories(file, max_length=None):
+def get_stories(file, mode='train', max_length=None):
 	"""
 		Given a file name, read the file, retrieve the stories,
 		and then convert the sentences into a single story.
 		If max_length is supplied,
 		any stories longer than max_length tokens will be discarded.
 	"""
-	data = split_stories(file.readlines()) # gives all sentences
+	if mode == 'train': data = split_stories(file.readlines()) # gives all sentences
+	elif mode == 'test': data = file 
+	else :
+		return ValueError("Invalid String in mode")
+
 	flatten = lambda data: reduce(lambda x, y: x + y, data) # look for help(reduce)
 	data = [(flatten(story), question, answer) for story, question, answer in data]
 	return data
@@ -166,7 +170,9 @@ class Network(object):
 		queries_train,
 		queries_test,
 		answers_train,
-		answers_test):
+		answers_test,
+		epochs,
+		batch_size):
 
 		self._inputs_train = inputs_train
 		self._queries_train = queries_train
@@ -174,8 +180,11 @@ class Network(object):
 		self._inputs_test = inputs_test
 		self._queries_test = queries_test
 		self._answers_test = answers_test
+		self._model = None
+		self._epochs = epochs
+		self._batch_size = batch_size
 
-	def model(self):
+	def model_network(self):
 		# input placeholders
 		input_sequence = Input((self._inputs_train.shape[1], ))
 		question = Input((self._queries_train.shape[1], ))
@@ -235,17 +244,26 @@ class Network(object):
 
 	# model saving:	
 	def train(self):
-		model = self.model()
+		self._model = self.model_network()
 		model.fit([self._inputs_train, self._queries_train], self._answers_train,
-				batch_size=32,
-				epochs=120,
+				batch_size = self._batch_size,
+				epochs = self._epochs,
 				validation_data=([self._inputs_test, self._queries_test],self._answers_test))
 		pass
 
-	def test(self):
-		model = self.model()
-		model.predict()
+	def test(self, story, query):
+		story = story.decode('utf-8').strip()
+		story = tokenization(stroy)
 
-(inputs_train, queries_train, answers_train), (inputs_test, queries_test, answers_test) = print_statistics()
-network = Network(inputs_train, inputs_test, queries_train,  queries_test, answers_train, answers_test)
-network.train()
+		query = query.decode('utf-8').strip()
+		query = tokenization(query)
+ 
+		vocab = set(story + query)
+		vocab = sorted(vocab)
+
+		# TODO: vectorization and feed for prediction
+		self._model.predict()
+
+# (inputs_train, queries_train, answers_train), (inputs_test, queries_test, answers_test) = print_statistics()
+# network = Network(inputs_train, inputs_test, queries_train,  queries_test, answers_train, answers_test)
+# network.train()
