@@ -19,5 +19,5 @@ from Login.views import login_loginpage
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'login/', login_loginpage),
+    url(r'^login/', login_loginpage),
 ]
