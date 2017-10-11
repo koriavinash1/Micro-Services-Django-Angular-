@@ -249,7 +249,7 @@ class Network(object):
 
 	def test(self):
 		# to checck user custom inputs
-		model = load_model("final.model.hdf5")
+		model = load_model("finalmodel.hdf5")
 		while 1:
 			print('story ?')
 			user_story = raw_input().split(' ')
