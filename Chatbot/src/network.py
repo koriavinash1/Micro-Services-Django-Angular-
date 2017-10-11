@@ -3,6 +3,7 @@ from keras.layers.embeddings import Embedding
 from keras.layers import Input, Activation, Dense, Permute, Dropout, add, dot, concatenate
 from keras.layers import LSTM
 from keras.layers.wrappers import Bidirectional
+from keras.models import load_model
 from keras.utils.data_utils import get_file
 from keras.preprocessing.sequence import pad_sequences
 from functools import reduce
@@ -17,12 +18,6 @@ import re
 		number Question        Answer       Supporting int(related lines):
 """
 
-challenges = {
-	    'single_supporting_fact_10k': 'tasks_1-20_v1-2/en-10k/qa1_single-supporting-fact_{}.txt',
-	    'two_supporting_facts_10k': 'tasks_1-20_v1-2/en-10k/qa2_two-supporting-facts_{}.txt',
-	}
-challenge_type = 'two_supporting_facts_10k' # train for...
-challenge = challenges[challenge_type]
 
 def tokenization(sentence):
 	# tokenize each sentence
@@ -127,7 +122,7 @@ def test_train_split(challenge):
 
 	return (train_stories, test_stories,vocab), (story_maxlen, query_maxlen, vocab_size)
 
-def print_statistics():
+def print_statistics(challenge):
 	(train_stories, test_stories, vocab), \
 	(story_maxlen, query_maxlen, vocab_size) = test_train_split(challenge)
 
@@ -245,25 +240,43 @@ class Network(object):
 	# model saving:	
 	def train(self):
 		self._model = self.model_network()
-		model.fit([self._inputs_train, self._queries_train], self._answers_train,
+		self._model.fit([self._inputs_train, self._queries_train], self._answers_train,
 				batch_size = self._batch_size,
 				epochs = self._epochs,
 				validation_data=([self._inputs_test, self._queries_test],self._answers_test))
+		self._model.save("finalmodel.hdf5")
 		pass
 
-	def test(self, story, query):
-		story = story.decode('utf-8').strip()
-		story = tokenization(stroy)
+	def test(self):
+		# to checck user custom inputs
+		model = load_model("final.model.hdf5")
+		while 1:
+			print('story ?')
+			user_story = raw_input().split(' ')
+			print('query ?')
+			user_query = raw_input().split(' ')
+			user_story, user_query, user_ans = vectorize_stories([[user_story, user_query, '.']], word_idx, story_maxlen, query_maxlen)
+			user_prediction = model.predict([user_story, user_query])
+			user_prediction = idx_word[np.argmax(user_prediction)]
+			print('result')
+			print(' '.join(user_story), ' '.join(user_query), '| Prediction:', user_prediction)
 
-		query = query.decode('utf-8').strip()
-		query = tokenization(query)
- 
-		vocab = set(story + query)
-		vocab = sorted(vocab)
 
-		# TODO: vectorization and feed for prediction
-		self._model.predict()
 
-# (inputs_train, queries_train, answers_train), (inputs_test, queries_test, answers_test) = print_statistics()
-# network = Network(inputs_train, inputs_test, queries_train,  queries_test, answers_train, answers_test)
-# network.train()
+challenges = {
+	    'single_supporting_fact_10k': 'tasks_1-20_v1-2/en-10k/qa1_single-supporting-fact_{}.txt',
+	    'two_supporting_facts_10k': 'tasks_1-20_v1-2/en-10k/qa2_two-supporting-facts_{}.txt',
+	}
+challenge_type = 'two_supporting_facts_10k' # train for...
+challenge = challenges[challenge_type]
+
+(inputs_train, queries_train, answers_train), (inputs_test, queries_test, answers_test) = print_statistics(challenge)
+network = Network(inputs_train, inputs_test, queries_train,  queries_test, answers_train, answers_test, epochs=15, batch_size=128)
+network.train()
+
+print "="*100
+ans = str(input("want to try your own story?(Y/N)..."))
+if ans == 'y' or ans == 'Y':
+	network.test() 
+else: 
+	print "Thanks for using: Rise an issue on github, if you encounter any problems..."
